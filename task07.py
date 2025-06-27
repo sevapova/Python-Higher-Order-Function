@@ -5,7 +5,9 @@ prices = ["$120", "$340", "$50", "$90"]
 '''
 
 def x(prices):
-    return [''.join(filter(lambda x: x != ' ',prices)) for i in prices ]
+    return list(map(
+        lambda price: float(price.replace("$","")),
+        prices))
 
 prices = ["$120", "$340", "$50", "$90"]
 
