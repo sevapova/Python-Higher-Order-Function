@@ -1,3 +1,4 @@
+from pprint import pprint
 randomuser_data = {
     "results": [
         {
@@ -568,3 +569,281 @@ randomuser_data = {
         "version": "1.4"
     }
 }
+
+
+def get_full_names(data: dict) -> list[str]:
+    """
+    Returns a list of users' full names in 'First Last' format.
+
+    Args:
+        data (dict): JSON data containing user records.
+
+    Returns:
+        list[str]: List of full names.
+    """
+    full_names = list(map(
+        lambda x: f"{x['name']['fist']} {x['name']['last']}",
+        data['results']
+    ))
+
+    return full_names
+
+def get_users_by_country(data: dict, country: str) -> list[dict]:
+    """
+    Filters and returns users who live in a specific country.
+
+    Args:
+        data (dict): JSON data containing user records.
+        country (str): Country name to filter by.
+
+    Returns:
+        list[dict]: List of dictionaries containing full name and email of matching users.
+    """
+    filtered_users = filter(
+        lambda user: user['location']['country'].lower() == country.lower(),
+        data['results']
+    )
+
+    users = list(map(
+        lambda user: {"name": user['name']['first'], "email": user['email']},
+        filtered_users
+    ))
+
+    return users
+
+
+def count_users_by_gender(data: dict) -> dict:
+    """
+    Counts the number of users by gender.
+
+    Args:
+        data (dict): JSON data containing user records.
+
+    Returns:
+        dict: Dictionary with gender as keys and count as values.
+    """
+    males = list(filter(
+        lambda user: user['gender'].lower() == 'male',
+        data['results']
+    ))
+
+    females = list(filter(
+        lambda user: user['gender'].lower() == 'female',
+        data['results']
+    ))
+
+    return {
+        "male": len(males),
+        "female": len(females)
+    }
+
+
+def get_emails_of_older_than(data: dict, age: int) -> list[str]:
+    """
+    Returns a list of emails of users older than the given age.
+
+    Args:
+        data (dict): JSON data containing user records.
+        age (int): Age threshold.
+
+    Returns:
+        list[str]: List of email addresses.
+    """
+    filtered_users = filter(
+        lambda x: x['dob']['age'] > age,
+        data['results']
+    )
+
+    users = list(map(
+        lambda user: user['email'],
+        filtered_users
+    ))
+
+    return users
+
+def sort_users_by_age(data: dict, descending: bool = False) -> list[dict]:
+    """
+    Sorts users by age in ascending or descending order.
+
+    Args:
+        data (dict): JSON data containing user records.
+        descending (bool, optional): Whether to sort in descending order. Defaults to False.
+
+    Returns:
+        list[dict]: List of users with name and age sorted accordingly.
+    """
+    sorted_users = sorted(
+        data['results'],
+        key=lambda x: x['dob']['age'],
+        reverse=descending
+    )
+
+    users = list(map(
+        lambda x: {"name": x['name']['fist'],"age": x['dob']['age']},
+        sorted_users
+    ))
+
+
+def get_usernames_starting_with(data: dict, letter: str) -> list[str]:
+    """
+    Returns a list of usernames starting with a given letter.
+
+    Args:
+        data (dict): JSON data containing user records.
+        letter (str): The starting letter to filter usernames.
+
+    Returns:
+        list[str]: List of matching usernames.
+    """
+    filtered_users = filter(
+        lambda user: user['login']['username'].startswith(letter),
+        data['results']
+    )
+
+    users = list(map(
+        lambda user: user['login']['username'],
+        filtered_users
+    ))
+
+    return users
+
+
+
+def get_average_age(data: dict) -> float:
+    """
+    Calculates and returns the average age of users.
+
+    Args:
+        data (dict): JSON data containing user records.
+
+    Returns:
+        float: Average age.
+    """
+    ages = list(map(
+        lambda x: x['dob']['age'],
+        data['results']
+    ))
+    return ages
+
+def group_users_by_nationality(data: dict) -> dict:
+    """
+    Groups and counts users by their nationality.
+
+    Args:
+        data (dict): JSON data containing user records.
+
+    Returns:
+        dict: Dictionary with nationality as keys and count as values.
+    """
+    group = dict()
+
+    for x in data['results']:
+        group.setdefault(x['nat'], 0)
+        group[x['nat']] += 1
+
+    pprint(group)
+
+def get_all_coordinates(data: dict) -> list[tuple[str, str]]:
+    """
+    Extracts all users' coordinates as tuples of (latitude, longitude).
+
+    Args:
+        data (dict): JSON data containing user records.
+
+    Returns:
+        list[tuple[str, str]]: List of coordinate tuples.
+    """
+    coordinates = list(map(
+        lambda x: (x['location']['latitude'], x ['location']['coordinates']['longitude']),
+        data['results']
+    ))
+
+    return coordinates
+
+
+def get_oldest_user(data: dict) -> dict:
+    """
+    Finds and returns the oldest user's name, age, and email.
+
+    Args:
+        data (dict): JSON data containing user records.
+
+    Returns:
+        dict: Dictionary containing 'name', 'age', and 'email' of the oldest user.
+    """
+    x = max(
+        data['results'],
+        key=lambda x : x['dob']['age']
+    )
+
+    return{
+        "name": f"{x['name']['fist']} {x['name']['last']}",
+        "age": x['dob']['age'],
+        "email": x['email']
+    }
+
+def find_users_in_timezone(data: dict, offset: str) -> list[dict]:
+    """
+    Returns users whose timezone offset matches the given value.
+
+    Args:
+        data (dict): JSON data containing user records.
+        offset (str): Timezone offset (e.g. '+5:30').
+
+    Returns:
+        list[dict]: List of users with full name and city.
+    """
+    filtered_users = filter(
+        lambda x: x['location']['timezone']['offset'] == offset,
+        data['results']
+    )
+
+    users = list(map(
+        lambda x: {"name": get_fullname(x), 'city': x['location']['city']},
+        filtered_users
+    ))
+
+    return users
+
+def get_fullname(x):
+    return f"{x['name']['first']} {x['naem']['last']}"
+
+
+def get_registered_before_year(data: dict, year: int) -> list[dict]:
+    """
+    Returns users who registered before a given year.
+
+    Args:
+        data (dict): JSON data containing user records.
+        year (int): Year threshold.
+
+    Returns:
+        list[dict]: List of users with full name and registration date.
+    """
+    filtered_users = filter(
+        lambda x: int(x['registered']['date'][:4]) < year,
+        data['results']
+    )
+
+    users = list(map(
+        lambda x: {
+            "name": get_fullname(x),
+            "registered": x['registered']['date']
+        },
+        filtered_users
+    ))
+
+    return users
+
+def get_fullname(x):
+    return f"{x['name']['first']} {x['name']['last']}"
+
+
+def run_functions() -> None:
+    """
+    Runs and prints results of all data processing functions for demonstration purposes.
+    """
+    print("Full Names:", get_full_names(randomuser_data))
+
+
+run_functions()
